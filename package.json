@@ -30,28 +30,32 @@
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
   },
   "dependencies": {
-    "@nuxt/kit": "^3.14.0",
-    "@whoj/utils-core": "^2.1.0",
-    "box-typescript-sdk-gen": "1.9.0"
+    "@nuxt/kit": "^3.15.4",
+    "@whoj/utils-core": "^2.3.1",
+    "box-typescript-sdk-gen": "1.12.0"
+  },
+  "peerDependencies": {
+    "httpxy": "^0.1.7"
   },
   "devDependencies": {
-    "@nuxt/devtools": "^1.6.4",
-    "@nuxt/eslint-config": "^0.7.3",
+    "@nuxt/devtools": "^2.0.0",
+    "@nuxt/eslint-config": "^1.0.1",
     "@nuxt/module-builder": "^0.8.4",
-    "@nuxt/schema": "^3.14.0",
-    "@nuxt/test-utils": "^3.15.1",
-    "@types/node": "^22.10.2",
+    "@nuxt/schema": "^3.15.4",
+    "@nuxt/test-utils": "^3.15.4",
+    "@types/node": "^22.13.1",
+    "@whoj/eslint-config": "^2.3.2",
     "changelogen": "^0.5.7",
-    "eslint": "^9.16.0",
-    "nuxt": "^3.14.0",
-    "typescript": "5.6.2",
-    "vitest": "^2.1.8",
-    "vue-tsc": "^2.1.10"
+    "eslint": "^9.20.0",
+    "nuxt": "^3.15.4",
+    "typescript": "~5.6.3",
+    "vitest": "^3.0.5",
+    "vue-tsc": "^2.2.0"
   },
   "pnpm": {
     "overrides": {
       "whatwg-url": "^14.0.0"
     }
   },
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "pnpm@10.2.1"
 }

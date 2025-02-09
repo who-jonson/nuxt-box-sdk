@@ -41,9 +41,7 @@ coverage
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
-# Intellij idea
-*.iml
-.idea
+# Certs
 *.key
 *.crt
 *.csr
