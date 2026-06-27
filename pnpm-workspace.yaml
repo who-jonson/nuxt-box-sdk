@@ -1,15 +1,52 @@
 allowBuilds:
   '@github/keytar': set this to true or false
   '@parcel/watcher': false
+  better-sqlite3: true
   esbuild: false
+  sharp: false
   unrs-resolver: false
+  vue-demi: true
 
 shamefullyHoist: true
 
 overrides:
   whatwg-url: ^14.0.0
+  esbuild@>=0.17.0 <0.28.1: ^0.28.1
 
 strictPeerDependencies: false
 
 packages:
   - playground
+  - docs
+
+catalog:
+  '@nuxt/kit': ^4.4.8
+  better-sqlite3: ^12.5.0
+  box-node-sdk: 10.12.0
+  docus: latest
+  nuxt: ^4.4.8
+
+catalogs:
+  dev:
+    '@nuxt/module-builder': ^1.0.2
+    '@nuxt/schema': ^4.4.8
+    '@types/node': latest
+    '@whoj/utils-core': ^2.4.0
+    changelogen: ^0.6.2
+    httpxy: ^0.5.0
+    nuxt: ^4.4.8
+    typescript: ^6.0.3
+    vue-tsc: ^3.3.5
+
+  lint:
+    '@nuxt/eslint-config': ^1.16.0
+    '@whoj/eslint-config': ^7.5.2
+    eslint: ^10.5.0
+
+  peer:
+    '@whoj/utils-core': ^2.4.0
+    httpxy: ^0.5.0
+
+  test:
+    '@nuxt/test-utils': ^4.0.3
+    vitest: ^4.1.9

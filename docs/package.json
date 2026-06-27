@@ -1,0 +1,16 @@
+{
+  "name": "nuxt-box-sdk-docs",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev --extends docus",
+    "build": "nuxt build --extends docus",
+    "generate": "nuxt generate --extends docus",
+    "preview": "nuxt preview --extends docus",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "docus": "catalog:",
+    "better-sqlite3": "catalog:",
+    "nuxt": "catalog:"
+  }
+}

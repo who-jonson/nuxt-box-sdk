@@ -7,6 +7,7 @@ export default createConfigForNuxt({
       './src'
     ],
     src: [
+      './docs',
       './playground'
     ]
   },

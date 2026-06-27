@@ -29,6 +29,7 @@
     "dev:build": "nuxt build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground",
     "play": "pnpm dev",
+    "docs:dev": "pnpm run --filter nuxt-box-sdk-docs dev",
     "release": "pnpm lint && pnpm run test && pnpm run prepack && changelogen --release && pnpm publish && git push --follow-tags",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -37,28 +38,28 @@
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
   },
   "peerDependencies": {
-    "@whoj/utils-core": "^2.4.0",
-    "httpxy": "^0.5.0"
+    "@whoj/utils-core": "catalog:peer",
+    "httpxy": "catalog:peer"
   },
   "dependencies": {
-    "@nuxt/kit": "^4.4.8",
-    "box-node-sdk": "10.12.0"
+    "@nuxt/kit": "catalog:",
+    "box-node-sdk": "catalog:"
   },
   "devDependencies": {
-    "@nuxt/eslint-config": "^1.16.0",
-    "@nuxt/module-builder": "^1.0.2",
-    "@nuxt/schema": "^4.4.8",
-    "@nuxt/test-utils": "^4.0.3",
-    "@types/node": "latest",
-    "@whoj/eslint-config": "^7.5.2",
-    "@whoj/utils-core": "^2.4.0",
-    "changelogen": "^0.6.2",
-    "eslint": "^10.5.0",
-    "httpxy": "^0.5.0",
-    "nuxt": "^4.4.8",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.9",
-    "vue-tsc": "^3.3.5"
+    "@nuxt/eslint-config": "catalog:lint",
+    "@nuxt/module-builder": "catalog:dev",
+    "@nuxt/schema": "catalog:dev",
+    "@nuxt/test-utils": "catalog:test",
+    "@types/node": "catalog:dev",
+    "@whoj/eslint-config": "catalog:lint",
+    "@whoj/utils-core": "catalog:dev",
+    "changelogen": "catalog:dev",
+    "eslint": "catalog:lint",
+    "httpxy": "catalog:dev",
+    "nuxt": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:test",
+    "vue-tsc": "catalog:dev"
   },
   "peerDependenciesMeta": {
     "httpxy": {

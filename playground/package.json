@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "nuxt-box-sdk": "workspace:*",
-    "nuxt": "^4.4.8"
+    "nuxt": "catalog:"
   }
 }
