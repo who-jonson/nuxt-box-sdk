@@ -32,16 +32,17 @@ export function useBoxClient(...args: any[]) {
   });
 
   if (import.meta.dev) {
+    const { debug } = useRuntimeConfig().public.box;
     return client.withInterceptors([
       {
         afterRequest(response) {
-          if (useRuntimeConfig().public.box.debug) {
+          if (debug) {
             console.log('Box Response: >>>  ', response.data);
           }
           return response;
         },
         beforeRequest(options) {
-          if (useRuntimeConfig().public.box.debug) {
+          if (debug) {
             console.log('Box Request: >>>  ', options.url);
           }
           return options;

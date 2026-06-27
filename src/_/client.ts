@@ -209,9 +209,6 @@ export class BoxClient {
       ].join('\n')}\n\n${_composables.join('\n')}\nfunction createBoxManager (...args) {
   const [manager, auth, networkSession] = args;
   const Manager = class extends manager {
-    static get name() {
-      return super.name;
-    }
     withAsyncData(opts = {}) {
       return new Proxy(this, {
         get(target, prop) {
@@ -254,7 +251,7 @@ export class BoxClient {
                   }
                 },
                 {
-                  ...opts || {},
+                  ...opts,
                   watch: [
                     ...opts?.watch || [],
                     () => toValue(args2)

@@ -13,10 +13,12 @@ export default defineLazyEventHandler(() => {
   });
 
   const box = useRuntimeConfig().public.box;
-  const pathRegex = (startsWith = false) => new RegExp(`${startsWith ? '^' : ''}${ensurePrefix('/', ensureSuffix('/', box.proxy))}(api|upload)`);
+  const proxyPathBase = ensurePrefix('/', ensureSuffix('/', box.proxy));
+  const pathRegexStart = new RegExp(`^${proxyPathBase}(api|upload)`);
+  const pathRegexReplace = new RegExp(`${proxyPathBase}(api|upload)`);
 
   return defineEventHandler(async ({ node: { req, res }, path }) => {
-    const regexArr = pathRegex(true).exec(path);
+    const regexArr = pathRegexStart.exec(path);
     if (!regexArr) {
       return;
     }
@@ -28,7 +30,7 @@ export default defineLazyEventHandler(() => {
       : 'https://upload.box.com/api';
 
     proxy.on('proxyReq', (proxyReq) => {
-      proxyReq.path = proxyReq.path.replace(pathRegex(), '');
+      proxyReq.path = proxyReq.path.replace(pathRegexReplace, '');
       proxyReq.setHeader('authorization', `Bearer ${token?.accessToken}`);
 
       if (import.meta.dev && box.debug) {

@@ -4,7 +4,7 @@ import type { AgentOptions } from 'box-node-sdk/internal';
 import type { ProxyConfig, Interceptor, BaseUrlsInput, Authentication } from 'box-node-sdk/networking';
 
 import { BaseUrls, NetworkSession } from 'box-node-sdk/networking';
-import { isObject, objectMap, isFunction, ensureSuffix, hasOwnProperty } from '@whoj/utils-core';
+import { isObject, isFunction, ensureSuffix, hasOwnProperty } from '@whoj/utils-core';
 
 import type { BoxManager, BoxManagerClass, BoxManagerNetworkSession } from '#nuxt/box-sdk/types';
 
@@ -142,11 +142,6 @@ function boxManagerFactory<T extends BoxManagerClass, Extend extends { [key: Pro
         }
       };
 
-      const mapped = objectMap(managerExtends, (k, v) => ([k, {
-        value: v
-      }]));
-
-      // const instance = Reflect.construct(ctor, args);
       return new Proxy(Reflect.construct(ctor, args), {
         get(target, key) {
           if (key in managerExtends) {
@@ -155,16 +150,6 @@ function boxManagerFactory<T extends BoxManagerClass, Extend extends { [key: Pro
           return Reflect.get(target, key);
         }
       });
-      // const proto = ctor.prototype;
-      // const keys = Object.getOwnPropertyNames(proto).concat(Object.getOwnPropertySymbols(proto) as any);
-      // const newProto = Object.create(proto);
-      //
-      // for (const key of keys) {
-      //   Object.defineProperty(newProto, key, Reflect.getOwnPropertyDescriptor(proto, key)!);
-      // }
-      //
-      // Object.assign(newProto, managerExtends);
-      // Object.setPrototypeOf(instance, newProto);
     }
   });
 

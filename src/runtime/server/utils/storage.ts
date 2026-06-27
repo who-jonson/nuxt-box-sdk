@@ -7,9 +7,7 @@ import { isString, isFunction } from '@whoj/utils-core';
 
 import { useStorage, useNitroApp, useRuntimeConfig } from '#imports';
 
-export interface BoxTokenStorageData extends AccessToken {
-
-}
+export interface BoxTokenStorageData extends AccessToken {}
 
 export interface BoxTokenStorageOptions {
   /**
@@ -71,8 +69,8 @@ class BoxTokenStorage implements TokenStorage {
 }
 
 export function useBoxTokenStorage(storage: string | Storage = 'cache', options: BoxTokenStorageOptions = {}): TokenStorage {
-  const unstorage = !storage || isString(storage)
-    ? useStorage(storage ?? 'cache')
+  const unstorage = isString(storage)
+    ? useStorage(storage || 'cache')
     : storage;
 
   let base = 'box';

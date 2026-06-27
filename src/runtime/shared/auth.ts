@@ -54,8 +54,9 @@ class BoxTokenStorage implements TokenStorage {
   ) {}
 
   clear() {
-    if (this.#tokens.has(this.getKey())) {
-      this.#tokens.delete(this.getKey());
+    const key = this.getKey();
+    if (this.#tokens.has(key)) {
+      this.#tokens.delete(key);
     }
     return Promise.resolve<undefined>(undefined);
   }
@@ -145,9 +146,10 @@ export function useBoxAuth<T extends BoxAuthType>(...args: any[]): undefined | U
  * @__NO_SIDE_EFFECTS__
  */
 export function useBoxAuthConfig<T extends BoxAuthType>(auth?: T, config?: UseBoxAuthConfigInput<T>, tokenStorage?: TokenStorage): UseBoxAuthConfig<T> {
+  const rc = useRuntimeConfig();
   if (!isDef(auth)) {
-    if (useRuntimeConfig().public.box?.auth) {
-      auth = useRuntimeConfig().public.box.auth as T;
+    if (rc.public.box?.auth) {
+      auth = rc.public.box.auth as T;
     } else {
       throw createError({
         message: 'You must provide a valid box auth type!',
@@ -159,9 +161,9 @@ export function useBoxAuthConfig<T extends BoxAuthType>(auth?: T, config?: UseBo
   if (!config) {
     if (import.meta.dev && auth === 'dev') {
       // @ts-ignore
-      config = useRuntimeConfig().public.box.developer;
-    } else if (useRuntimeConfig().box[auth]) { // @ts-ignore
-      config = useRuntimeConfig().box[auth];
+      config = rc.public.box.developer;
+    } else if (rc.box[auth]) { // @ts-ignore
+      config = rc.box[auth];
     } else {
       throw createError({
         message: `You must provide a valid configuration for '${auth}' box auth!`,
@@ -207,10 +209,6 @@ export function useBoxAuthConfig<T extends BoxAuthType>(auth?: T, config?: UseBo
   }
 
   return config as UseBoxAuthConfig<T>;
-}
-
-function f() {
-
 }
 
 function useBoxTokenStorage(options: BoxTokenStorageOptions = {}): TokenStorage {
