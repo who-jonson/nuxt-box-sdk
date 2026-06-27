@@ -17,28 +17,7 @@ import { useBoxAuth } from './auth';
  * @__NO_SIDE_EFFECTS__
  */
 export function useBoxClient<T extends Authentication = Authentication>(auth?: T, session?: NetworkSession | BoxNetworkOptions): BoxClient<T>;
-/**
- * @__NO_SIDE_EFFECTS__
- */
-export function useBoxCcgClient(authConfig?: UseBoxAuthConfigInput<'ccg'>, session?: NetworkSession | BoxNetworkOptions) {
-  return useBoxClient('ccg', authConfig, session);
-}
-/**
- * @__NO_SIDE_EFFECTS__
- */
-export function useBoxJwtClient(authConfig?: UseBoxAuthConfigInput<'jwt'>, session?: NetworkSession | BoxNetworkOptions) {
-  return useBoxClient('jwt', authConfig, session);
-}
-
-/**
- * @__NO_SIDE_EFFECTS__
- */
-export function useBoxOAuthClient(authConfig?: UseBoxAuthConfigInput<'oauth'>, session?: NetworkSession | BoxNetworkOptions) {
-  return useBoxClient('oauth', authConfig, session);
-}
-
 export function useBoxClient<T extends BoxAuthType = BoxAuthType>(auth?: T, authConfig?: UseBoxAuthConfigInput<T>, session?: NetworkSession | BoxNetworkOptions): BoxClient<UseBoxAuthReturns<T>>;
-
 export function useBoxClient(...args: any[]) {
   const client = new BoxClient({
     auth: isAuthentication(args[0])
@@ -72,6 +51,26 @@ export function useBoxClient(...args: any[]) {
   }
 
   return client;
+}
+
+/**
+ * @__NO_SIDE_EFFECTS__
+ */
+export function useBoxCcgClient(authConfig?: UseBoxAuthConfigInput<'ccg'>, session?: NetworkSession | BoxNetworkOptions) {
+  return useBoxClient('ccg', authConfig, session);
+}
+/**
+ * @__NO_SIDE_EFFECTS__
+ */
+export function useBoxJwtClient(authConfig?: UseBoxAuthConfigInput<'jwt'>, session?: NetworkSession | BoxNetworkOptions) {
+  return useBoxClient('jwt', authConfig, session);
+}
+
+/**
+ * @__NO_SIDE_EFFECTS__
+ */
+export function useBoxOAuthClient(authConfig?: UseBoxAuthConfigInput<'oauth'>, session?: NetworkSession | BoxNetworkOptions) {
+  return useBoxClient('oauth', authConfig, session);
 }
 
 /**

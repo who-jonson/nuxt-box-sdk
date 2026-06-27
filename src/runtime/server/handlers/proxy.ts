@@ -1,10 +1,11 @@
 import { consola } from 'consola';
 import { createProxyServer } from 'httpxy';
 import { ensurePrefix, ensureSuffix } from '@whoj/utils-core';
+import { defineEventHandler, defineLazyEventHandler } from 'h3';
 
-import { lazyEventHandler, useRuntimeConfig, defineEventHandler } from '#imports';
+import { useRuntimeConfig } from '#imports';
 
-export default lazyEventHandler(() => {
+export default defineLazyEventHandler(() => {
   const proxy = createProxyServer({
     changeOrigin: true,
     secure: false,

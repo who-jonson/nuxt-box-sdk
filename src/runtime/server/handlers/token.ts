@@ -1,10 +1,12 @@
+import { defineEventHandler, appendResponseHeader } from 'h3';
+
 import type { BoxAuthType } from '#nuxt/box-sdk/types';
 
-import { eventHandler, useRuntimeConfig, appendResponseHeader } from '#imports';
+import { useRuntimeConfig } from '#imports';
 
-export default eventHandler(async (event) => {
+export default defineEventHandler(async (event) => {
   try {
-    const { auth, routes } = useRuntimeConfig(event).public.box;
+    const { auth, routes } = useRuntimeConfig(event).public.box; // @ts-ignore
     const authType = ((routes.token && routes.token.authType) || auth) as Exclude<BoxAuthType, 'dev'>;
 
     const boxAuth = (await import('./../utils/auth')).useBoxAuth(authType)!;

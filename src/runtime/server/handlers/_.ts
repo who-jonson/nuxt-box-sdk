@@ -4,8 +4,8 @@ import { createError } from '#imports';
 
 export function createBoxSdkError(err: any) {
   if (err instanceof BoxSdkError) {
-    throw createError(JSON.parse(err?.message || '{}'));
+    return createError(JSON.parse(err?.message || '{}'));
   }
 
-  throw createError(err);
+  return createError(err);
 }

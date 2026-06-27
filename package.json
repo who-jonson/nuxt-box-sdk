@@ -26,8 +26,8 @@
   "scripts": {
     "prepack": "nuxt-module-build build",
     "dev": "pnpm dev:prepare && nuxt dev playground",
-    "dev:build": "nuxi build playground",
-    "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
+    "dev:build": "nuxt build playground",
+    "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground",
     "play": "pnpm dev",
     "release": "pnpm lint && pnpm run test && pnpm run prepack && changelogen --release && pnpm publish && git push --follow-tags",
     "lint": "eslint .",
@@ -41,11 +41,11 @@
     "httpxy": "^0.5.0"
   },
   "dependencies": {
+    "@nuxt/kit": "^4.4.8",
     "box-node-sdk": "10.12.0"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^1.16.0",
-    "@nuxt/kit": "^4.4.8",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/schema": "^4.4.8",
     "@nuxt/test-utils": "^4.0.3",

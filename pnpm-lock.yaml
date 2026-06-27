@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@nuxt/kit':
+        specifier: ^4.4.8
+        version: 4.4.8(magicast@0.5.3)
       box-node-sdk:
         specifier: 10.12.0
         version: 10.12.0
@@ -18,9 +21,6 @@ importers:
       '@nuxt/eslint-config':
         specifier: ^1.16.0
         version: 1.16.0(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.39)(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3)
-      '@nuxt/kit':
-        specifier: ^4.4.8
-        version: 4.4.8(magicast@0.5.3)
       '@nuxt/module-builder':
         specifier: ^1.0.2
         version: 1.0.2(@nuxt/cli@3.36.0(@nuxt/schema@4.4.8)(cac@6.7.14)(magicast@0.5.3))(@vue/compiler-core@3.5.39)(esbuild@0.28.1)(typescript@6.0.3)(vue-tsc@3.3.5(typescript@6.0.3))(vue@3.5.39(typescript@6.0.3))
