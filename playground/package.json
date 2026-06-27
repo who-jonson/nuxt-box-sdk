@@ -1,10 +1,14 @@
 {
-  "private": true,
-  "name": "nuxt-box-typescript-sdk-playground",
+  "name": "nuxt-box-sdk-playground",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "nuxi dev",
     "build": "nuxi build",
     "generate": "nuxi generate"
+  },
+  "dependencies": {
+    "nuxt-box-sdk": "workspace:*",
+    "nuxt": "^4.4.8"
   }
 }

@@ -1,7 +1,8 @@
 import type { BoxAuthType } from '#nuxt/box-sdk/types';
-import { appendResponseHeader, defineEventHandler, useRuntimeConfig } from '#imports';
 
-export default defineEventHandler(async (event) => {
+import { eventHandler, useRuntimeConfig, appendResponseHeader } from '#imports';
+
+export default eventHandler(async (event) => {
   try {
     const { auth, routes } = useRuntimeConfig(event).public.box;
     const authType = ((routes.token && routes.token.authType) || auth) as Exclude<BoxAuthType, 'dev'>;
@@ -19,8 +20,7 @@ export default defineEventHandler(async (event) => {
       accessToken: token.accessToken,
       expiresIn: token.expiresIn
     };
-  }
-  catch (err: any) {
+  } catch (err: any) {
     throw (await import('./_')).createBoxSdkError(err);
   }
 });

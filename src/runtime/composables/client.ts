@@ -1,12 +1,16 @@
-import { useRuntimeConfig } from '#imports';
+import type { TokenStorage } from 'box-node-sdk/box';
+import type { AccessToken } from 'box-node-sdk/schemas';
+import type { Authentication } from 'box-node-sdk/networking';
+
 import { ensureSuffix } from '@whoj/utils-core';
+
+import { useRuntimeConfig } from '#imports';
 import { BoxClient } from '#nuxt/box-sdk/client';
-import { BoxTokenAuth, useBoxAuth } from './auth';
+import { isTokenStorage, isAuthentication, createCachedFunction } from '#nuxt/box-sdk/utils';
+
 import type { BoxTokenAuthConfig, BoxTokenAuthOptions } from './auth';
-import { createCachedFunction, isAuthentication, isTokenStorage } from '#nuxt/box-sdk/utils';
-import type { TokenStorage } from 'box-typescript-sdk-gen/lib/box/tokenStorage.generated.js';
-import type { Authentication } from 'box-typescript-sdk-gen/lib/networking/auth.generated.js';
-import type { AccessToken } from 'box-typescript-sdk-gen/lib/schemas/accessToken.generated.js';
+
+import { useBoxAuth, BoxTokenAuth } from './auth';
 
 export function useBoxClient<T extends Authentication>(auth?: T): BoxClient;
 export function useBoxClient<T extends TokenStorage>(tokenStorage?: T): BoxClient;
@@ -14,58 +18,6 @@ export function useBoxClient<T extends string | AccessToken>(token?: T, config?:
 export function useBoxClient(...args: any[]): BoxClient {
   const factory = createCachedFunction(createBoxClient);
   return factory(...args);
-}
-
-export function createBoxClient(_auth?: string | AccessToken | Authentication | TokenStorage, config?: BoxTokenAuthConfig) {
-  const { debug, developer, proxy } = useRuntimeConfig().public.box;
-
-  let _client: BoxClient;
-  if (!_auth && proxy) {
-    _client = createProxyClient(proxy);
-  }
-  else if (isAuthentication(_auth)) {
-    _client = new BoxClient({ auth: _auth });
-  }
-  else {
-    const options: BoxTokenAuthOptions = { config };
-    if (_auth) {
-      if (isTokenStorage(_auth)) {
-        options.tokenStorage = _auth;
-      }
-      else {
-        options.token = _auth as string | AccessToken;
-      }
-    }
-    else if (import.meta.dev) {
-      options.token = developer?.token;
-    }
-
-    _client = new BoxClient({ auth: useBoxAuth(options) });
-  }
-  _client = _client.withExtraHeaders({
-    'Access-Control-Allow-Origin': '*'
-  });
-
-  if (import.meta.dev) {
-    return _client.withInterceptors([
-      {
-        beforeRequest(options) {
-          if (debug) {
-            console.log('Box Request: >>>  ', options.url);
-          }
-          return options;
-        },
-        afterRequest(response) {
-          if (debug) {
-            console.log('Box Response: >>>  ', response.url);
-          }
-          return response;
-        }
-      }
-    ]);
-  }
-
-  return _client;
 }
 
 /**
@@ -86,16 +38,64 @@ export function useBoxBasicClient(fields?: Omit<BoxTokenAuthOptions, 'config'>) 
   });
 }
 
+export function createBoxClient(_auth?: string | AccessToken | TokenStorage | Authentication, config?: BoxTokenAuthConfig) {
+  const { debug, developer, proxy } = useRuntimeConfig().public.box;
+
+  let _client: BoxClient;
+  if (!_auth && proxy) {
+    _client = createProxyClient(proxy);
+  } else if (isAuthentication(_auth)) {
+    _client = new BoxClient({ auth: _auth });
+  } else {
+    const options: BoxTokenAuthOptions = { config };
+    if (_auth) {
+      if (isTokenStorage(_auth)) {
+        options.tokenStorage = _auth;
+      } else {
+        options.token = _auth as string | AccessToken;
+      }
+    } else if (import.meta.dev) {
+      options.token = developer?.token;
+    }
+
+    _client = new BoxClient({ auth: useBoxAuth(options)! });
+  }
+  _client = _client.withExtraHeaders({
+    'Access-Control-Allow-Origin': '*'
+  });
+
+  if (import.meta.dev) {
+    return _client.withInterceptors([
+      {
+        afterRequest(response) {
+          if (debug) {
+            console.log('Box Response: >>>  ', response.url);
+          }
+          return response;
+        },
+        beforeRequest(options) {
+          if (debug) {
+            console.log('Box Request: >>>  ', options.url);
+          }
+          return options;
+        }
+      }
+    ]);
+  }
+
+  return _client;
+}
+
 /**
  * @__NO_SIDE_EFFECTS__
  */
 function createProxyClient(proxy: string) {
   if (import.meta.server) {
-    return new BoxClient({ auth: useBoxAuth() });
+    return new BoxClient({ auth: useBoxAuth()! });
   }
 
   proxy = ensureSuffix('/', proxy);
-  return (new BoxClient({ auth: useBoxAuth({ token: 'token' }) })).withCustomBaseUrls({
+  return (new BoxClient({ auth: useBoxAuth({ token: 'token' })! })).withCustomBaseUrls({
     baseUrl: `${proxy}api`,
     uploadUrl: `${proxy}upload`
   });

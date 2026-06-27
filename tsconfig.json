@@ -4,6 +4,6 @@
     "dist",
     ".output",
     "node_modules",
-    "playground",
+    "playground"
   ]
 }

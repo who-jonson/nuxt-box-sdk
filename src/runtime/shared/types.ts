@@ -1,20 +1,10 @@
+import type { H3Event } from 'h3';
+import type { BoxClient } from 'box-node-sdk';
 import type { Class } from '@whoj/utils-types';
-import type { BoxClient } from 'box-typescript-sdk-gen/lib/client.generated.js';
-import type { AgentOptions } from 'box-typescript-sdk-gen/lib/internal/utils.js';
-import type { OAuthConfigInput } from 'box-typescript-sdk-gen/lib/box/oauth.generated.js';
-import type { CcgConfigInput } from 'box-typescript-sdk-gen/lib/box/ccgAuth.generated.js';
-import type { ProxyConfig } from 'box-typescript-sdk-gen/lib/networking/proxyConfig.generated.js';
-import type { Interceptor } from 'box-typescript-sdk-gen/lib/networking/interceptors.generated.js';
-import type { NetworkSessionInput } from 'box-typescript-sdk-gen/lib/networking/network.generated.js';
-import type { JwtConfigInput, JwtConfigFile } from 'box-typescript-sdk-gen/lib/box/jwtAuth.generated.js';
-import type { DeveloperTokenConfig } from 'box-typescript-sdk-gen/lib/box/developerTokenAuth.generated.js';
-import type { BaseUrlsInput, BaseUrls } from 'box-typescript-sdk-gen/lib/networking/baseUrls.generated.js';
+import type { BaseUrls, BaseUrlsInput, Authentication, NetworkSession, NetworkSessionInput } from 'box-node-sdk/networking';
+import type { JwtConfigFile, CcgConfigInput, JwtConfigInput, OAuthConfigInput, DeveloperTokenConfig } from 'box-node-sdk/box';
 
 export type BoxAuthType = 'dev' | 'jwt' | 'ccg' | 'oauth';
-
-type ConfigWithStorage<T> = Omit<T, 'tokenStorage'> & {
-  tokenStorage?: string;
-};
 
 export type BoxCcgConfig = ConfigWithStorage<CcgConfigInput>;
 
@@ -24,7 +14,20 @@ export type BoxOAuthConfig = ConfigWithStorage<OAuthConfigInput>;
 
 export type BoxDeveloperTokenConfig = DeveloperTokenConfig & { token: string };
 
-export type BoxManagerNames = keyof Omit<BoxClient, 'auth' | 'networkSession' | 'authorization' | 'withInterceptors' | 'withSuppressedNotifications' | 'withProxy' | 'withCustomBaseUrls' | 'withCustomAgentOptions' | 'withExtraHeaders' | 'withAsUserHeader'>;
+export interface BoxManagerNetworkSession extends Omit<NetworkSessionInput, 'baseUrls'> {
+  baseUrls?: BaseUrls | BaseUrlsInput;
+}
+
+export interface BoxAuthMethods {
+  ccg: BoxCcgConfig;
+  dev: BoxDeveloperTokenConfig;
+  jwt: BoxJwtConfig;
+  oauth: BoxOAuthConfig;
+}
+
+export type BoxManager<T extends BoxManagerClass, Extends extends { [key: PropertyKey]: any } = {}> = ExtendedManager & Extends & InstanceType<T>;
+
+export type BoxManagerClass = Class<{ auth?: Authentication; networkSession: NetworkSession }, [{ auth?: Authentication; networkSession: NetworkSession }]>;
 
 export interface BoxNetworkOptions extends Omit<NetworkSessionInput, 'baseUrls'> {
   asUser?: string;
@@ -32,20 +35,12 @@ export interface BoxNetworkOptions extends Omit<NetworkSessionInput, 'baseUrls'>
   suppressNotifications?: boolean;
 }
 
-export interface ExtendedManager {
-  withAsUserHeader(userId: string): this;
-  withSuppressedNotifications(): this;
-  withExtraHeaders(extraHeaders?: { [key: string]: string }): this;
-  withCustomBaseUrls(baseUrlsInput: BaseUrlsInput): this;
-  withProxy(config: ProxyConfig): this;
-  withCustomAgentOptions(agentOptions: AgentOptions): this;
-  withInterceptors(interceptors: Interceptor[]): this;
-}
+export type BoxManagerNames = keyof Omit<BoxClient, 'auth' | 'withProxy' | 'authorization' | 'networkSession' | 'withInterceptors' | 'withExtraHeaders' | 'withAsUserHeader' | 'withCustomBaseUrls' | 'withCustomAgentOptions' | 'withSuppressedNotifications'>;
 
-export type BoxManager<T extends Class<any>> = InstanceType<T> & ExtendedManager;
-
-export interface BoxManagerNetworkSession extends Omit<NetworkSessionInput, 'baseUrls'> {
-  baseUrls?: BaseUrls | BaseUrlsInput;
+export interface ExtendedManager extends Pick<NetworkSession, 'withProxy' | 'withInterceptors' | 'withNetworkClient' | 'withRetryStrategy' | 'withCustomBaseUrls' | 'withCustomAgentOptions'> {
+  withAsUserHeader: (userId: string) => this;
+  withExtraHeaders: (extraHeaders?: { [key: string]: string }) => this;
+  withSuppressedNotifications: () => this;
 }
 
 export interface BoxSdkOptions {
@@ -61,37 +56,19 @@ export interface BoxSdkOptions {
    */
   auth?: BoxAuthType;
 
+  auths?: {
+    [name: string]: {
+      name?: string;
+      resolver: (event?: H3Event) => Authentication;
+    };
+  };
+
   /**
    * Client Credentials Grant Config
    *
    * RuntimeConfig Prefix - NUXT_BOX_CCG_
    */
   ccg?: BoxCcgConfig;
-
-  /**
-   * Jwt Auth Config
-   *
-   * RuntimeConfig - NUXT_BOX_JWT
-   * RuntimeConfig Prefix (when providing object) - NUXT_BOX_JWT_
-   */
-  jwt?: BoxJwtConfig | {
-    /**
-     * If provided Jwt config will be resolved from that file
-     */
-    configFile: `${string}.json`;
-  } | {
-    /**
-     * Jwt config as JSON or JSON string
-     */
-    configJson: string | JwtConfigFile;
-  };
-
-  /**
-   * OAuth 2.0  Config
-   *
-   * RuntimeConfig Prefix - NUXT_BOX_OAUTH_
-   */
-  oauth?: BoxOAuthConfig;
 
   /**
    * Box Developer Token
@@ -101,21 +78,50 @@ export interface BoxSdkOptions {
   developer?: BoxDeveloperTokenConfig;
 
   /**
+   * Jwt Auth Config
+   *
+   * RuntimeConfig - NUXT_BOX_JWT
+   * RuntimeConfig Prefix (when providing object) - NUXT_BOX_JWT_
+   */
+  jwt?: BoxJwtConfig | {
+    /**
+     * Jwt config as JSON or JSON string
+     */
+    configJson: string | JwtConfigFile;
+  } | {
+    /**
+     * If provided Jwt config will be resolved from that file
+     */
+    configFile: `${string}.json`;
+  };
+
+  /**
    * Box Managers to register with client
    *
    * In production, you provably don't need all the managers. Box by default include all the managers with client
    * So, by configuring `managers` you may decrease you bundle at a significant size
    */
   managers?: {
-    include?: Array<BoxManagerNames>;
-
-    exclude?: Array<BoxManagerNames>;
-
     /**
      * @default true
      */
     composables?: boolean;
+
+    include?: Array<BoxManagerNames>;
+
+    exclude?: Array<BoxManagerNames>;
   };
+
+  /**
+   * OAuth 2.0  Config
+   *
+   * RuntimeConfig Prefix - NUXT_BOX_OAUTH_
+   */
+  oauth?: BoxOAuthConfig;
 }
+
+type ConfigWithStorage<T> = Omit<T, 'tokenStorage'> & {
+  tokenStorage?: string;
+};
 
 export {};

@@ -1,6 +1,7 @@
 import { defu } from 'defu';
-import { updateRuntimeConfig, useNuxt } from '@nuxt/kit';
-import { deleteProperty, isString } from '@whoj/utils-core';
+import { useNuxt, updateRuntimeConfig } from '@nuxt/kit';
+import { isString, deleteProperty } from '@whoj/utils-core';
+
 import type { ModuleOptions, ModuleRuntimeConfig, ModulePublicRuntimeConfig } from '../types';
 
 export function configureSdkOptions(options: ModuleOptions, nuxt = useNuxt()) {
@@ -20,16 +21,16 @@ export function configureSdkOptions(options: ModuleOptions, nuxt = useNuxt()) {
 
   if (options.jwt || options.auth === 'jwt') { // @ts-ignore
     runtimeConfig.jwt = {
+      algorithm: undefined,
       clientId: '',
       clientSecret: '',
+      configFile: '',
+      configJson: '',
+      enterpriseId: '',
       jwtKeyId: '',
       privateKey: '',
       privateKeyPassphrase: '',
-      enterpriseId: '',
       userId: '',
-      algorithm: undefined,
-      configFile: '',
-      configJson: '',
       ...(options.jwt || {})
     };
   }
@@ -48,7 +49,7 @@ export function configureSdkOptions(options: ModuleOptions, nuxt = useNuxt()) {
     (nuxt.options.runtimeConfig.public.box || {}),
     { // @ts-ignore
       auth: options.auth ?? '',
-      ...(isDev ? { developer: { token: '' }, debug: options.debug } : {}),
+      ...(isDev ? { debug: options.debug, developer: { token: '' } } : {}),
       routes: options.routes ? options.routes : undefined
     } satisfies ModulePublicRuntimeConfig['box']
   );
@@ -58,9 +59,9 @@ export function configureSdkOptions(options: ModuleOptions, nuxt = useNuxt()) {
   }
 
   if (isDev) {
-    const developerToken = import.meta.env.BOX_DEVELOPER_TOKEN
-      || import.meta.env.NUXT_PUBLIC_BOX_DEVELOPER_TOKEN
-      || import.meta.env.NUXT_BOX_DEVELOPER_TOKEN;
+    const developerToken = process.env.BOX_DEVELOPER_TOKEN
+      || process.env.NUXT_PUBLIC_BOX_DEVELOPER_TOKEN
+      || process.env.NUXT_BOX_DEVELOPER_TOKEN;
     if (isString(developerToken)) {
       publicRuntimeConfig.developer.token = developerToken;
     }
@@ -68,8 +69,7 @@ export function configureSdkOptions(options: ModuleOptions, nuxt = useNuxt()) {
     if (!options.auth && publicRuntimeConfig.developer.token) {
       publicRuntimeConfig.auth = 'dev';
     }
-  }
-  else if (publicRuntimeConfig.developer) {
+  } else if (publicRuntimeConfig.developer) {
     deleteProperty(publicRuntimeConfig, 'developer');
   }
 

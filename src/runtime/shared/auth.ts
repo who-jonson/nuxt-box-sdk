@@ -1,13 +1,21 @@
-import { isTokenStorage } from '#nuxt/box-sdk/utils';
+import type { AccessToken } from 'box-node-sdk/schemas';
+import type { TokenStorage, CcgConfigInput, JwtConfigInput, OAuthConfigInput } from 'box-node-sdk/box';
+
+import { isDef, isString, isObject, isFunction, getProperty } from '@whoj/utils-core';
+import { BoxOAuth, CcgConfig, JwtConfig, BoxCcgAuth, BoxJwtAuth, OAuthConfig, BoxDeveloperTokenAuth } from 'box-node-sdk';
+
 import type { BoxAuthType } from '#nuxt/box-sdk/types';
+
+import { isTokenStorage } from '#nuxt/box-sdk/utils';
 import { createError, useRuntimeConfig } from '#imports';
-import { isDef, getProperty, isString, isFunction, isObject } from '@whoj/utils-core';
-import type { TokenStorage } from 'box-typescript-sdk-gen/lib/box/tokenStorage.generated.js';
-import type { AccessToken } from 'box-typescript-sdk-gen/lib/schemas/accessToken.generated.js';
-import { BoxDeveloperTokenAuth } from 'box-typescript-sdk-gen/lib/box/developerTokenAuth.generated.js';
-import { BoxOAuth, OAuthConfig, type OAuthConfigInput } from 'box-typescript-sdk-gen/lib/box/oauth.generated.js';
-import { BoxCcgAuth, CcgConfig, type CcgConfigInput } from 'box-typescript-sdk-gen/lib/box/ccgAuth.generated.js';
-import { BoxJwtAuth, JwtConfig, type JwtConfigInput } from 'box-typescript-sdk-gen/lib/box/jwtAuth.generated.js';
+
+export type UseBoxAuthReturns<T extends BoxAuthType> = T extends 'dev'
+  ? BoxDeveloperTokenAuth
+  : T extends 'ccg'
+    ? BoxCcgAuth
+    : T extends 'jwt'
+      ? BoxJwtAuth
+      : BoxOAuth;
 
 export type UseBoxAuthConfig<T extends BoxAuthType> = T extends 'dev'
   ? ConstructorParameters<typeof BoxDeveloperTokenAuth>[0]
@@ -25,28 +33,86 @@ export type UseBoxAuthConfigInput<T extends BoxAuthType> = T extends 'dev'
       ? JwtConfigInput
       : OAuthConfigInput;
 
-export type UseBoxAuthReturns<T extends BoxAuthType> = T extends 'dev'
-  ? BoxDeveloperTokenAuth
-  : T extends 'ccg'
-    ? BoxCcgAuth
-    : T extends 'jwt'
-      ? BoxJwtAuth
-      : BoxOAuth;
+export interface BoxTokenStorageOptions {
+  /**
+   * if provided, will be used as storage prefix
+   * @default `ccg` | 'jwt' | 'oauth' - depending on your configuration
+   */
+  auth?: string;
+
+  /**
+   * if provided, will be used to retrieve key for storing the access token
+   * Otherwise, it will call NitroRuntimeHook named 'box:token:storageKey'
+   */
+  getKey?: () => string;
+}
+class BoxTokenStorage implements TokenStorage {
+  #tokens = new Map<string, AccessToken>();
+
+  constructor(
+    protected readonly config: BoxTokenStorageOptions = {}
+  ) {}
+
+  clear() {
+    if (this.#tokens.has(this.getKey())) {
+      this.#tokens.delete(this.getKey());
+    }
+    return Promise.resolve<undefined>(undefined);
+  }
+
+  get() {
+    return Promise.resolve(this.#tokens.get(this.getKey()));
+  }
+
+  store(token: AccessToken) {
+    this.#tokens.set(this.getKey(), token);
+    return Promise.resolve<undefined>(undefined);
+  }
+
+  private getKey() {
+    if (isFunction(this.config.getKey)) {
+      return this.config.getKey();
+    }
+
+    return `${this.config.auth}:access_token`;
+  }
+}
+export function useBoxAuth<T extends BoxAuthType>(authType?: T, config?: UseBoxAuthConfig<T> | UseBoxAuthConfigInput<T>, tokenStorage?: TokenStorage): undefined | UseBoxAuthReturns<T>;
 
 /**
  * @__NO_SIDE_EFFECTS__
  */
-export function useBoxAuth<T extends BoxAuthType>(options?: { authType?: T; config?: UseBoxAuthConfigInput<T> | UseBoxAuthConfig<T>; tokenStorage?: TokenStorage }): UseBoxAuthReturns<T> | undefined;
-export function useBoxAuth<T extends BoxAuthType>(authType?: T, config?: UseBoxAuthConfigInput<T> | UseBoxAuthConfig<T>, tokenStorage?: TokenStorage): UseBoxAuthReturns<T> | undefined;
-export function useBoxAuth<T extends BoxAuthType>(...args: any[]): UseBoxAuthReturns<T> | undefined {
-  let authType: T, _config: UseBoxAuthConfigInput<T> | UseBoxAuthConfig<T>, tokenStorage: TokenStorage;
+export function useBoxCcgAuth(config?: CcgConfig | CcgConfigInput, tokenStorage?: TokenStorage) {
+  return new BoxCcgAuth({ config: useBoxAuthConfig('ccg', config, tokenStorage) });
+}
+
+/**
+ * @__NO_SIDE_EFFECTS__
+ */
+export function useBoxJwtAuth(config?: JwtConfig | JwtConfigInput, tokenStorage?: TokenStorage) {
+  return new BoxJwtAuth({ config: useBoxAuthConfig('jwt', config, tokenStorage) });
+}
+
+/**
+ * @__NO_SIDE_EFFECTS__
+ */
+export function useBoxOAuth(config?: OAuthConfig | OAuthConfigInput, tokenStorage?: TokenStorage) {
+  return new BoxOAuth({ config: useBoxAuthConfig('oauth', config, tokenStorage) });
+}
+
+/**
+ * @__NO_SIDE_EFFECTS__
+ */
+export function useBoxAuth<T extends BoxAuthType>(options?: { authType?: T; tokenStorage?: TokenStorage; config?: UseBoxAuthConfig<T> | UseBoxAuthConfigInput<T> }): undefined | UseBoxAuthReturns<T>;
+
+export function useBoxAuth<T extends BoxAuthType>(...args: any[]): undefined | UseBoxAuthReturns<T> {
+  let authType: T, tokenStorage: TokenStorage, _config: UseBoxAuthConfig<T> | UseBoxAuthConfigInput<T>;
 
   if (isObject<any>(args[0])) {
     authType = args[0].authType;
     _config = args[0].config;
     tokenStorage = args[0].tokenStorage;
-  }
-  else {
+  } else {
     [authType, _config, tokenStorage] = args;
   }
 
@@ -78,51 +144,28 @@ export function useBoxAuth<T extends BoxAuthType>(...args: any[]): UseBoxAuthRet
 /**
  * @__NO_SIDE_EFFECTS__
  */
-export function useBoxOAuth(config?: OAuthConfig | OAuthConfigInput, tokenStorage?: TokenStorage) {
-  return new BoxOAuth({ config: useBoxAuthConfig('oauth', config, tokenStorage) });
-}
-
-/**
- * @__NO_SIDE_EFFECTS__
- */
-export function useBoxCcgAuth(config?: CcgConfig | CcgConfigInput, tokenStorage?: TokenStorage) {
-  return new BoxCcgAuth({ config: useBoxAuthConfig('ccg', config, tokenStorage) });
-}
-
-/**
- * @__NO_SIDE_EFFECTS__
- */
-export function useBoxJwtAuth(config?: JwtConfig | JwtConfigInput, tokenStorage?: TokenStorage) {
-  return new BoxJwtAuth({ config: useBoxAuthConfig('jwt', config, tokenStorage) });
-}
-
-/**
- * @__NO_SIDE_EFFECTS__
- */
 export function useBoxAuthConfig<T extends BoxAuthType>(auth?: T, config?: UseBoxAuthConfigInput<T>, tokenStorage?: TokenStorage): UseBoxAuthConfig<T> {
   if (!isDef(auth)) {
     if (useRuntimeConfig().public.box?.auth) {
       auth = useRuntimeConfig().public.box.auth as T;
-    }
-    else {
+    } else {
       throw createError({
-        name: 'InvalidBoxAuthTypeError',
-        message: 'You must provide a valid box auth type!'
+        message: 'You must provide a valid box auth type!',
+        name: 'InvalidBoxAuthTypeError'
       });
     }
   }
 
   if (!config) {
-    if (import.meta.dev && auth === 'dev') { // @ts-ignore
+    if (import.meta.dev && auth === 'dev') {
+      // @ts-ignore
       config = useRuntimeConfig().public.box.developer;
-    } // @ts-ignore
-    else if (useRuntimeConfig().box[auth]) { // @ts-ignore
+    } else if (useRuntimeConfig().box[auth]) { // @ts-ignore
       config = useRuntimeConfig().box[auth];
-    }
-    else {
+    } else {
       throw createError({
-        name: 'InvalidBoxAuthConfig',
-        message: `You must provide a valid configuration for '${auth}' box auth!`
+        message: `You must provide a valid configuration for '${auth}' box auth!`,
+        name: 'InvalidBoxAuthConfig'
       });
     }
   }
@@ -133,28 +176,30 @@ export function useBoxAuthConfig<T extends BoxAuthType>(auth?: T, config?: UseBo
     });
   }
 
-  if (auth === 'ccg') {
-    return new CcgConfig(config as UseBoxAuthConfigInput<'ccg'>) as UseBoxAuthConfig<T>;
-  }
-
-  if (auth === 'jwt') {
-    if ((config as any)?.configFile?.length) {
-      return JwtConfig.fromConfigFile(
-        (config as any).configFile,
-        (config as any).tokenStorage
-      ) as UseBoxAuthConfig<T>;
+  if (import.meta.server) {
+    if (auth === 'ccg') {
+      return new CcgConfig(config as UseBoxAuthConfigInput<'ccg'>) as UseBoxAuthConfig<T>;
     }
 
-    if ((config as any)?.configJson) {
-      return JwtConfig.fromConfigJsonString(
-        isString((config as any).configJson)
-          ? (config as any).configJson
-          : JSON.stringify((config as any).configJson),
-        (config as any).tokenStorage
-      ) as UseBoxAuthConfig<T>;
-    }
+    if (auth === 'jwt') {
+      if ((config as any)?.configFile?.length) {
+        return JwtConfig.fromConfigFile(
+          (config as any).configFile,
+          (config as any).tokenStorage
+        ) as UseBoxAuthConfig<T>;
+      }
 
-    return new JwtConfig(config as UseBoxAuthConfigInput<'jwt'>) as UseBoxAuthConfig<T>;
+      if ((config as any)?.configJson) {
+        return JwtConfig.fromConfigJsonString(
+          isString((config as any).configJson)
+            ? (config as any).configJson
+            : JSON.stringify((config as any).configJson),
+          (config as any).tokenStorage
+        ) as UseBoxAuthConfig<T>;
+      }
+
+      return new JwtConfig(config as UseBoxAuthConfigInput<'jwt'>) as UseBoxAuthConfig<T>;
+    }
   }
 
   if (auth === 'oauth') {
@@ -164,50 +209,8 @@ export function useBoxAuthConfig<T extends BoxAuthType>(auth?: T, config?: UseBo
   return config as UseBoxAuthConfig<T>;
 }
 
-export interface BoxTokenStorageOptions {
-  /**
-   * if provided, will be used as storage prefix
-   * @default `ccg` | 'jwt' | 'oauth' - depending on your configuration
-   */
-  auth?: string;
+function f() {
 
-  /**
-   * if provided, will be used to retrieve key for storing the access token
-   * Otherwise, it will call NitroRuntimeHook named 'box:token:storageKey'
-   */
-  getKey?: () => string;
-}
-
-class BoxTokenStorage implements TokenStorage {
-  #tokens = new Map<string, AccessToken>();
-
-  constructor(
-    protected readonly config: BoxTokenStorageOptions = {}
-  ) {}
-
-  store(token: AccessToken) {
-    this.#tokens.set(this.getKey(), token);
-    return Promise.resolve<undefined>(undefined);
-  }
-
-  get() {
-    return Promise.resolve(this.#tokens.get(this.getKey()));
-  }
-
-  clear() {
-    if (this.#tokens.has(this.getKey())) {
-      this.#tokens.delete(this.getKey());
-    }
-    return Promise.resolve<undefined>(undefined);
-  }
-
-  private getKey() {
-    if (isFunction(this.config.getKey)) {
-      return this.config.getKey();
-    }
-
-    return `${this.config.auth}:access_token`;
-  }
 }
 
 function useBoxTokenStorage(options: BoxTokenStorageOptions = {}): TokenStorage {

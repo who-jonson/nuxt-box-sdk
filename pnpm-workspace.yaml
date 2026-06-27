@@ -1,0 +1,15 @@
+allowBuilds:
+  '@github/keytar': set this to true or false
+  '@parcel/watcher': false
+  esbuild: false
+  unrs-resolver: false
+
+shamefullyHoist: true
+
+overrides:
+  whatwg-url: ^14.0.0
+
+strictPeerDependencies: false
+
+packages:
+  - playground

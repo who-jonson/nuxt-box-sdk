@@ -1,9 +1,11 @@
 import type { Storage } from 'unstorage';
+import type { TokenStorage } from 'box-node-sdk/box';
+import type { AccessToken } from 'box-node-sdk/schemas';
+
 import { prefixStorage } from 'unstorage';
-import { isFunction, isString } from '@whoj/utils-core';
-import { useNitroApp, useStorage, useRuntimeConfig } from '#imports';
-import type { TokenStorage } from 'box-typescript-sdk-gen/lib/box/tokenStorage.generated.js';
-import type { AccessToken } from 'box-typescript-sdk-gen/lib/schemas/accessToken.generated.js';
+import { isString, isFunction } from '@whoj/utils-core';
+
+import { useStorage, useNitroApp, useRuntimeConfig } from '#imports';
 
 export interface BoxTokenStorageData extends AccessToken {
 
@@ -29,24 +31,25 @@ class BoxTokenStorage implements TokenStorage {
     protected readonly config: BoxTokenStorageOptions = {}
   ) {}
 
-  async store(token: AccessToken) {
-    await this.storage.setItem(await this.getKey(), token);
+  async clear() {
+    await this.storage.clear(await this.getKey());
     return undefined;
   }
 
   async get() {
     const key = await this.getKey();
     const data = (await this.storage.getItem(key)) ?? undefined;
-    if (!data) return undefined;
+    if (!data)
+      return undefined;
     return {
       ...data,
-      meta: await this.storage.getMeta(key),
-      key
+      key,
+      meta: await this.storage.getMeta(key)
     };
   }
 
-  async clear() {
-    await this.storage.clear(await this.getKey());
+  async store(token: AccessToken) {
+    await this.storage.setItem(await this.getKey(), token);
     return undefined;
   }
 
@@ -56,8 +59,8 @@ class BoxTokenStorage implements TokenStorage {
     }
 
     const obj = {
-      key: 'access_token',
-      auth: this.config.auth
+      auth: this.config.auth,
+      key: 'access_token'
     };
 
     // @ts-ignore
@@ -67,7 +70,7 @@ class BoxTokenStorage implements TokenStorage {
   }
 }
 
-export function useBoxTokenStorage(storage: Storage | string = 'cache', options: BoxTokenStorageOptions = {}): TokenStorage {
+export function useBoxTokenStorage(storage: string | Storage = 'cache', options: BoxTokenStorageOptions = {}): TokenStorage {
   const unstorage = !storage || isString(storage)
     ? useStorage(storage ?? 'cache')
     : storage;

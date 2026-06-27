@@ -1,29 +1,22 @@
-import { registerImports } from './_/client';
-import type { ModuleOptions } from './types';
-import { configureSdkOptions } from './_/config';
-import { registerTypeTemplates } from './_/templates';
-import { defineNuxtModule, createResolver, addServerHandler, addServerPlugin } from '@nuxt/kit';
+import { createResolver, addServerPlugin, defineNuxtModule, addServerHandler } from '@nuxt/kit';
 
+import type { ModuleOptions } from './types';
+
+import { registerImports } from './_/client';
+import { configureSdkOptions } from './_/config';
 import { name, version } from './../package.json';
+import { registerTypeTemplates } from './_/templates';
 
 const configKey = 'box' as const;
 
 export default defineNuxtModule<ModuleOptions>().with({
-  meta: {
-    name,
-    version,
-    configKey,
-    compatibility: {
-      nuxt: '>=3.14'
-    }
-  },
   defaults: ({ options }) => ({
-    mode: 'auto',
     debug: options.debug,
-    proxy: options.ssr ? '/_box/proxy' as const : false,
     managers: {
       composables: true
     },
+    mode: 'auto',
+    proxy: options.ssr ? '/_box/proxy' as const : false,
     routes: {
       login: {
         method: 'get' as const,
@@ -35,6 +28,14 @@ export default defineNuxtModule<ModuleOptions>().with({
       }
     }
   }),
+  meta: {
+    compatibility: {
+      nuxt: '>=3.14'
+    },
+    configKey,
+    name,
+    version
+  },
   setup(options, nuxt) {
     const { resolve } = createResolver(import.meta.url);
 
@@ -52,25 +53,25 @@ export default defineNuxtModule<ModuleOptions>().with({
       if (options.routes !== false) {
         if (options.routes.login !== false) {
           addServerHandler({
-            route: options.routes.login.path,
+            handler: resolve('./runtime/server/handlers/login'),
             method: options.routes.login.method,
-            handler: resolve('./runtime/server/handlers/login')
+            route: options.routes.login.path
           });
         }
 
         if (options.routes.redirect !== false) {
           addServerHandler({
-            route: options.routes.redirect.path,
+            handler: resolve('./runtime/server/handlers/redirect'),
             method: options.routes.redirect.method,
-            handler: resolve('./runtime/server/handlers/redirect')
+            route: options.routes.redirect.path
           });
         }
       }
 
       if (options.proxy) {
         addServerHandler({
-          middleware: true,
-          handler: resolve('./runtime/server/handlers/proxy')
+          handler: resolve('./runtime/server/handlers/proxy'),
+          middleware: true
         });
 
         addServerPlugin(resolve('./runtime/server/plugins/box'));

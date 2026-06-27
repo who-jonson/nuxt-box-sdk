@@ -1,4 +1,4 @@
-import { defineEventHandler, getQuery, useNitroApp } from '#imports';
+import { getQuery, useNitroApp, defineEventHandler } from '#imports';
 
 export default defineEventHandler<{
   query: {
@@ -14,9 +14,7 @@ export default defineEventHandler<{
 
     // @ts-ignore
     await useNitroApp().hooks.callHook('box:login:success', { event, response });
-    return;
-  }
-  catch (e) {
+  } catch (e) {
     throw (await import('./_')).createBoxSdkError(e);
   }
 });

@@ -1,61 +1,71 @@
 {
-  "name": "nuxt-box-typescript-sdk",
-  "version": "1.0.0",
-  "description": "Box TypeScript Generated SDK Nuxt module",
-  "repository": "who-jonson/nuxt-box-typescript-sdk",
-  "license": "MIT",
+  "name": "nuxt-box-sdk",
   "type": "module",
-  "exports": {
+  "version": "0.0.1",
+  "packageManager": "pnpm@11.9.0",
+  "description": "Box TypeScript Generated SDK Nuxt module",
+  "license": "MIT",
+  "repository": "who-jonson/nuxt-box-sdk",
+ "exports": {
     ".": {
-      "types": "./dist/types.d.ts",
-      "import": "./dist/module.mjs",
-      "require": "./dist/module.cjs"
+      "types": "./dist/types.d.mts",
+      "import": "./dist/module.mjs"
     }
   },
-  "main": "./dist/module.cjs",
-  "types": "./dist/types.d.ts",
+  "main": "./dist/module.mjs",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./dist/types.d.mts"
+      ]
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
     "prepack": "nuxt-module-build build",
-    "dev": "nuxi dev playground",
+    "dev": "pnpm dev:prepare && nuxt dev playground",
     "dev:build": "nuxi build playground",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground",
     "play": "pnpm dev",
-    "release": "npm run lint && npm run test && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
+    "release": "pnpm lint && pnpm run test && pnpm run prepack && changelogen --release && pnpm publish && git push --follow-tags",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
   },
-  "dependencies": {
-    "@nuxt/kit": "^3.15.4",
-    "@whoj/utils-core": "^2.3.1",
-    "box-typescript-sdk-gen": "1.12.0"
-  },
   "peerDependencies": {
-    "httpxy": "^0.1.7"
+    "@whoj/utils-core": "^2.4.0",
+    "httpxy": "^0.5.0"
+  },
+  "dependencies": {
+    "box-node-sdk": "10.12.0"
   },
   "devDependencies": {
-    "@nuxt/devtools": "^2.0.0",
-    "@nuxt/eslint-config": "^1.0.1",
-    "@nuxt/module-builder": "^0.8.4",
-    "@nuxt/schema": "^3.15.4",
-    "@nuxt/test-utils": "^3.15.4",
-    "@types/node": "^22.13.1",
-    "@whoj/eslint-config": "^2.3.2",
-    "changelogen": "^0.5.7",
-    "eslint": "^9.20.0",
-    "nuxt": "^3.15.4",
-    "typescript": "~5.6.3",
-    "vitest": "^3.0.5",
-    "vue-tsc": "^2.2.0"
+    "@nuxt/eslint-config": "^1.16.0",
+    "@nuxt/kit": "^4.4.8",
+    "@nuxt/module-builder": "^1.0.2",
+    "@nuxt/schema": "^4.4.8",
+    "@nuxt/test-utils": "^4.0.3",
+    "@types/node": "latest",
+    "@whoj/eslint-config": "^7.5.2",
+    "@whoj/utils-core": "^2.4.0",
+    "changelogen": "^0.6.2",
+    "eslint": "^10.5.0",
+    "httpxy": "^0.5.0",
+    "nuxt": "^4.4.8",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9",
+    "vue-tsc": "^3.3.5"
   },
-  "pnpm": {
-    "overrides": {
-      "whatwg-url": "^14.0.0"
+  "peerDependenciesMeta": {
+    "httpxy": {
+      "optional": false
+    },
+    "@whoj/utils-core": {
+      "optional": false
     }
-  },
-  "packageManager": "pnpm@10.2.1"
+  }
 }

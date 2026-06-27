@@ -1,5 +1,6 @@
 import { withBase } from 'ufo';
-import { defineEventHandler, getRequestURL, sendRedirect, useNitroApp, useRuntimeConfig } from '#imports';
+
+import { useNitroApp, sendRedirect, getRequestURL, useRuntimeConfig, defineEventHandler } from '#imports';
 
 export default defineEventHandler(async (event) => {
   try {
@@ -13,8 +14,7 @@ export default defineEventHandler(async (event) => {
     await useNitroApp().hooks.callHook('box:login:before', { event, options });
 
     return sendRedirect(event, boxAuth.getAuthorizeUrl(options));
-  }
-  catch (err) {
+  } catch (err) {
     throw (await import('./_')).createBoxSdkError(err);
   }
 });

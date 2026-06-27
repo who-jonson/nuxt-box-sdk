@@ -1,12 +1,14 @@
+import type { TokenStorage } from 'box-node-sdk/box';
+import type { AccessToken } from 'box-node-sdk/schemas';
+import type { Authentication, NetworkSession } from 'box-node-sdk/networking';
+
 import { isObject } from '@whoj/utils-core';
+import { BoxSdkError } from 'box-node-sdk/box/errors';
+import { InMemoryTokenStorage } from 'box-node-sdk/box/tokenStorage';
+
 import { useRequestEvent, useRuntimeConfig } from '#imports';
+
 import { useBoxAuth as useBoxProxyAuth } from '../shared/auth';
-import { BoxSdkError } from 'box-typescript-sdk-gen/lib/box/errors.js';
-import type { TokenStorage } from 'box-typescript-sdk-gen/lib/box/tokenStorage.generated.js';
-import type { Authentication } from 'box-typescript-sdk-gen/lib/networking/auth.generated.js';
-import type { AccessToken } from 'box-typescript-sdk-gen/lib/schemas/accessToken.generated.js';
-import { InMemoryTokenStorage } from 'box-typescript-sdk-gen/lib/box/tokenStorage.generated.js';
-import type { NetworkSession } from 'box-typescript-sdk-gen/lib/networking/network.generated.js';
 
 export interface BoxTokenAuthConfig {
   readonly clientId?: string;
@@ -29,12 +31,8 @@ export class BoxTokenAuth implements Authentication {
     });
   }
 
-  async retrieveToken(_?: NetworkSession): Promise<AccessToken> {
-    const token = await this.tokenStorage.get();
-    if (!token?.accessToken?.length) {
-      throw new BoxSdkError({ message: 'No access token is available!' });
-    }
-    return token!;
+  downscopeToken() {
+    return Promise.resolve<AccessToken>(undefined as any);
   }
 
   refreshToken(_?: NetworkSession): Promise<AccessToken> {
@@ -48,23 +46,27 @@ export class BoxTokenAuth implements Authentication {
     return ''.concat('Bearer ', token.accessToken!);
   }
 
-  revokeToken(_?: NetworkSession): Promise<undefined> {
-    return Promise.resolve(undefined);
+  async retrieveToken(_?: NetworkSession): Promise<AccessToken> {
+    const token = await this.tokenStorage.get();
+    if (!token?.accessToken?.length) {
+      throw new BoxSdkError({ message: 'No access token is available!' });
+    }
+    return token!;
   }
 
-  downscopeToken() {
-    return Promise.resolve<AccessToken>(undefined);
+  revokeToken(_?: NetworkSession): Promise<undefined> {
+    return Promise.resolve(undefined);
   }
 }
 
 /**
  * @__NO_SIDE_EFFECTS__
  */
-export function useBoxAuth(options?: BoxTokenAuthOptions): Authentication {
+export function useBoxAuth(options?: BoxTokenAuthOptions): undefined | Authentication {
   if ((!options || (!options.token && !options.tokenStorage)) && useRuntimeConfig().public.box.proxy) {
     if (import.meta.server) {
       return useBoxProxyAuth({
-        tokenStorage: useRequestEvent().context.$box.resolveTokenStorage()
+        tokenStorage: useRequestEvent()?.context.$box.resolveTokenStorage()
       });
     }
     return new BoxTokenAuth({ token: 'token' });

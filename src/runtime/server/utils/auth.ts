@@ -1,9 +1,11 @@
+import { isDef, isString, isObject, isFunction } from '@whoj/utils-core';
+
 import { useEvent } from '#imports';
+
 import { useBoxTokenStorage } from './storage';
 import * as authUtils from '../../shared/auth';
-import { isDef, isFunction, isString, isObject } from '@whoj/utils-core';
 
-export type { UseBoxAuthConfig, UseBoxAuthConfigInput, UseBoxAuthReturns, BoxTokenStorageOptions } from '../../shared/auth';
+export { useBoxAuthConfig } from '../../shared/auth';
 
 /**
  * @__NO_SIDE_EFFECTS__
@@ -12,24 +14,11 @@ export const useBoxAuth: typeof authUtils.useBoxAuth = /* @__PURE__ */ withToken
   if (!args.length || (isObject<any>(args[0]) && !args[0].tokenStorage)) {
     args[0] ||= {};
     args[0].tokenStorage = resolveTokenStorage(args[0]?.authType);
-  }
-  else if (isString(args[0]) && !isDef(args[2])) {
+  } else if (isString(args[0]) && !isDef(args[2])) {
     args[2] = resolveTokenStorage(args[0]);
   }
   return args;
 });
-
-function resolveTokenStorage(auth?: string) {
-  try {
-    if (isFunction(useEvent()?.context.$box?.resolveTokenStorage)) {
-      return useEvent().context.$box.resolveTokenStorage(auth);
-    }
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  catch (e) {
-    return useBoxTokenStorage('cache', { auth });
-  }
-}
 
 function withTokenStorage<T extends ((...args: any[]) => any)>(fn: T, setter: (args: any[]) => any[]): T {
   return new Proxy(fn, {
@@ -37,6 +26,16 @@ function withTokenStorage<T extends ((...args: any[]) => any)>(fn: T, setter: (a
       return target.apply(thisArg, setter(args));
     }
   });
+}
+
+function resolveTokenStorage(auth?: string) {
+  try {
+    if (isFunction(useEvent()?.context.$box?.resolveTokenStorage)) {
+      return useEvent().context.$box.resolveTokenStorage(auth);
+    }
+  } catch (e) {
+    return useBoxTokenStorage('cache', { auth });
+  }
 }
 
 /**
@@ -69,4 +68,4 @@ export const useBoxJwtAuth: typeof authUtils.useBoxJwtAuth = /* @__PURE__ */ wit
   return args;
 });
 
-export { useBoxAuthConfig } from '../../shared/auth';
+export type { UseBoxAuthConfig, UseBoxAuthReturns, UseBoxAuthConfigInput, BoxTokenStorageOptions } from '../../shared/auth';

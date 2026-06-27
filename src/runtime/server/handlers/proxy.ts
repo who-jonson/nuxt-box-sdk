@@ -1,19 +1,20 @@
 import { consola } from 'consola';
 import { createProxyServer } from 'httpxy';
 import { ensurePrefix, ensureSuffix } from '@whoj/utils-core';
-import { defineEventHandler, lazyEventHandler, useRuntimeConfig } from '#imports';
+
+import { lazyEventHandler, useRuntimeConfig, defineEventHandler } from '#imports';
 
 export default lazyEventHandler(() => {
   const proxy = createProxyServer({
-    xfwd: false,
+    changeOrigin: true,
     secure: false,
-    changeOrigin: true
+    xfwd: false
   });
 
   const box = useRuntimeConfig().public.box;
   const pathRegex = (startsWith = false) => new RegExp(`${startsWith ? '^' : ''}${ensurePrefix('/', ensureSuffix('/', box.proxy))}(api|upload)`);
 
-  return defineEventHandler(async ({ path, node: { req, res } }) => {
+  return defineEventHandler(async ({ node: { req, res }, path }) => {
     const regexArr = pathRegex(true).exec(path);
     if (!regexArr) {
       return;
@@ -36,8 +37,7 @@ export default lazyEventHandler(() => {
 
     try {
       await proxy.web(req, res, { target });
-    }
-    catch (error: any) {
+    } catch (error: any) {
       if (error?.code !== 'ECONNRESET') {
         throw error;
       }
