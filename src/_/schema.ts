@@ -3,7 +3,7 @@ import type { Schema } from 'untyped';
 import { objectPick } from '@whoj/utils-core';
 import { useNuxt, extendNuxtSchema } from '@nuxt/kit';
 
-const schemaProperties = <Schema['properties']>{
+const schemaProperties = {
   auth: {
     description: 'When application running in development mode & provided `developer.token` Then `developer.token` will be used as default auth',
     title: 'Default Auth to use',
@@ -63,7 +63,7 @@ const schemaProperties = <Schema['properties']>{
     title: 'Nitro (unstorage) mount point',
     type: 'string'
   }
-};
+} satisfies Schema['properties'];
 
 export function addBoxSchema(nuxt = useNuxt()) {
   extendNuxtSchema(() => ({

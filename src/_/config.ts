@@ -58,7 +58,7 @@ export function configureSdkOptions(options: ModuleOptions, nuxt = useNuxt()) {
     publicRuntimeConfig.proxy = isString(options.proxy) ? options.proxy : '/_box/proxy';
   }
 
-  if (isDev) {
+  if (import.meta.dev) {
     const developerToken = process.env.BOX_DEVELOPER_TOKEN
       || process.env.NUXT_PUBLIC_BOX_DEVELOPER_TOKEN
       || process.env.NUXT_BOX_DEVELOPER_TOKEN;

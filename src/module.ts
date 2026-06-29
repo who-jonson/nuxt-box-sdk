@@ -1,3 +1,4 @@
+import { isObject } from '@whoj/utils-core/is';
 import { createResolver, addServerPlugin, defineNuxtModule, addServerHandler } from '@nuxt/kit';
 
 import type { ModuleOptions } from './types';
@@ -27,7 +28,7 @@ export default defineNuxtModule<ModuleOptions>().with({
         path: '/_box/authenticate/callback' as const
       }
     }
-  }),
+  } as ModuleOptions),
   meta: {
     compatibility: {
       nuxt: '>=3.14'
@@ -50,8 +51,8 @@ export default defineNuxtModule<ModuleOptions>().with({
     registerTypeTemplates(!!(nuxt.options.ssr && options.mode !== 'client' && options.proxy));
 
     if (nuxt.options.ssr && options.mode !== 'client') {
-      if (options.routes !== false) {
-        if (options.routes.login !== false) {
+      if (isObject<Exclude<ModuleOptions['routes'], false | undefined>>(options.routes)) {
+        if (isObject<Exclude<Exclude<ModuleOptions['routes'], false | undefined>['login'], false | undefined>>(options.routes.login)) {
           addServerHandler({
             handler: resolve('./runtime/server/handlers/login'),
             method: options.routes.login.method,
@@ -59,7 +60,7 @@ export default defineNuxtModule<ModuleOptions>().with({
           });
         }
 
-        if (options.routes.redirect !== false) {
+        if (isObject<Exclude<Exclude<ModuleOptions['routes'], false | undefined>['redirect'], false | undefined>>(options.routes.redirect)) {
           addServerHandler({
             handler: resolve('./runtime/server/handlers/redirect'),
             method: options.routes.redirect.method,

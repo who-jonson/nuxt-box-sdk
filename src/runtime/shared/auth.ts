@@ -78,7 +78,6 @@ class BoxTokenStorage implements TokenStorage {
     return `${this.config.auth}:access_token`;
   }
 }
-export function useBoxAuth<T extends BoxAuthType>(authType?: T, config?: UseBoxAuthConfig<T> | UseBoxAuthConfigInput<T>, tokenStorage?: TokenStorage): undefined | UseBoxAuthReturns<T>;
 
 /**
  * @__NO_SIDE_EFFECTS__
@@ -104,8 +103,8 @@ export function useBoxOAuth(config?: OAuthConfig | OAuthConfigInput, tokenStorag
 /**
  * @__NO_SIDE_EFFECTS__
  */
+export function useBoxAuth<T extends BoxAuthType>(authType?: T, config?: UseBoxAuthConfig<T> | UseBoxAuthConfigInput<T>, tokenStorage?: TokenStorage): undefined | UseBoxAuthReturns<T>;
 export function useBoxAuth<T extends BoxAuthType>(options?: { authType?: T; tokenStorage?: TokenStorage; config?: UseBoxAuthConfig<T> | UseBoxAuthConfigInput<T> }): undefined | UseBoxAuthReturns<T>;
-
 export function useBoxAuth<T extends BoxAuthType>(...args: any[]): undefined | UseBoxAuthReturns<T> {
   let authType: T, tokenStorage: TokenStorage, _config: UseBoxAuthConfig<T> | UseBoxAuthConfigInput<T>;
 
