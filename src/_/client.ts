@@ -13,10 +13,10 @@ export function registerImports(resolve: (...p: string[]) => string, options: Mo
 
   if (options.mode !== 'server') {
     const sources = [{
-      from: resolve('./runtime/composables/auth'),
+      from: resolve('./runtime/app/composables/auth'),
       imports: ['useBoxAuth']
     }, {
-      from: resolve('./runtime/composables/client'),
+      from: resolve('./runtime/app/composables/client'),
       imports: ['useBoxClient', 'useBoxBasicClient', 'createBoxClient']
     }];
 

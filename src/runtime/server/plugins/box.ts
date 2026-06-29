@@ -1,4 +1,4 @@
-import { defineNitroPlugin } from '#imports';
+import { defineNitroPlugin } from 'nitropack/runtime';
 
 export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('request', async (event) => {
